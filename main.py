@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel
 from agents.run import RunConfig
+from pydantic import BaseModel
+
 
 load_dotenv()
 
@@ -28,16 +30,40 @@ config = RunConfig(
     tracing_disabled=True
 )
 
+class AgentOutput(BaseModel):
+    response: str
+    agent_name: str
 
-agent = Agent(
+calculator_agent = Agent(
     name='Calculator Agent',
-    instructions='You are a calculator Ai agent you can only do calculations. If anything else is told just tell the user you can\'t do anything but calculations.',
-    model=model
+    instructions='You are a calculator AI agent you can only do calculations. If anything else is told just tell the user you can\'t do anything but calculations.',
+    model=model,
+    output_type=AgentOutput
 )
+
+translator_agent = Agent(
+    name='Translator Agent',
+    instructions='You are a translator AI agent you can only do translations. If anything else is told just tell the user you can\'t do anything but translations.',
+    model=model,
+    output_type=AgentOutput
+)
+
+triage_agent = Agent(
+    name='Triage Agent',
+    instructions='You are a triage Agent.',
+    model=model,
+    handoffs=[calculator_agent, translator_agent]
+)
+
 
 
 while True:
     user_input = input('User: ')
-    result = Runner.run_sync(agent, user_input, run_config=config)
+    result = Runner.run_sync(triage_agent, user_input, run_config=config)
 
-    print(result.final_output)
+    if isinstance(result.final_output, AgentOutput):
+        print(result.final_output.response)
+        print(result.final_output.agent_name + '\n')
+    else:
+        # Raw response from triage agent itself
+        print(result.final_output)
