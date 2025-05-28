@@ -64,7 +64,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.markdown('<h1 style="position: fixed; font-size: 40px; margin-bottom: 40px; background-color: #0E1117; z-index: 999; width: 90%; top: 40px;">Unit Conversion using AI</h1>', unsafe_allow_html=True)
+st.markdown('<h1 style="position: fixed; font-size: 40px; margin-bottom: 40px; background-color: #0E1117; z-index: 999; width: 90%; top: 40px;">AI Agent</h1>', unsafe_allow_html=True)
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 role_icon_map = {
