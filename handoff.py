@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, function_tool, handoff, RunContextWrapper
 from agents.run import RunConfig
 from pydantic import BaseModel
+from agents.extensions import handoff_filters
+
 
 
 load_dotenv()
@@ -43,13 +45,15 @@ def on_handoff(ctx: RunContextWrapper, input_data: Problems):
 maths_agent = Agent(
     name='maths assistant',
     instructions='You are a maths assistant you only solve mathematic problems.',
-    model=model
+    model=model,
+    handoff_description='This agent only answers maths related queries'
 )
 
 history_agent = Agent(
     name='history assistant',
     instructions='You are a history assistant you only tell about history.',
-    model=model
+    model=model,
+    handoff_description='This agent only answers historical queries'
 )
 
 triage_agent = Agent(
@@ -57,8 +61,8 @@ triage_agent = Agent(
     instructions='You are a teaching assistant. You handoff user request to corresponding agent if present. If such agent is not present to handoff, you simply tell user what queries you can answer.',
     model=model,
     handoffs=[
-        handoff(maths_agent, input_type=Problems, on_handoff=on_handoff),
-        handoff(history_agent, input_type=Problems, on_handoff=on_handoff)
+        handoff(agent=maths_agent, input_type=Problems, on_handoff=on_handoff, input_filter=handoff_filters.remove_all_tools),
+        handoff(agent=history_agent, input_type=Problems, on_handoff=on_handoff)
     ]
 )
 
