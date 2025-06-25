@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, function_tool, handoff, RunContextWrapper, input_guardrail, output_guardrail, GuardrailFunctionOutput, InputGuardrailTripwireTriggered
+from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, function_tool, handoff, RunContextWrapper, input_guardrail, output_guardrail, GuardrailFunctionOutput, InputGuardrailTripwireTriggered, OutputGuardrailTripwireTriggered
 from agents.run import RunConfig
 from pydantic import BaseModel
 from agents.extensions import handoff_filters
@@ -43,6 +43,21 @@ maths_detector_guardrail_agent = Agent(
 )
 
 
+@output_guardrail
+async def validate_numeric_output(ctx: RunContextWrapper, agent: Agent, output: str) -> GuardrailFunctionOutput:
+    # Trip if output is not a pure number
+    try:
+        float(output)
+        is_not_number = False
+    except ValueError:
+        is_not_number = True
+
+    return GuardrailFunctionOutput(
+        tripwire_triggered=is_not_number,
+        output_info=output
+    )
+
+
 @input_guardrail
 async def not_maths_homework_detection_guardrail(ctx: RunContextWrapper[None], agent: Agent, input: str | list) -> GuardrailFunctionOutput:
     detection_result = await Runner.run(maths_detector_guardrail_agent, input, run_config=config)
@@ -55,9 +70,10 @@ async def not_maths_homework_detection_guardrail(ctx: RunContextWrapper[None], a
 
 math_homework_agent = Agent(
     name='Maths Helper Agent',
-    instructions='Answer maths query',
+    instructions='Answer maths query. Only give answer in numbers form no other character',
     model=model,
-    input_guardrails=[not_maths_homework_detection_guardrail]
+    input_guardrails=[not_maths_homework_detection_guardrail],
+    output_guardrails=[validate_numeric_output]
 )
 
 
@@ -71,6 +87,9 @@ async def main():
         # print('Maths Guardrail triggered')
         # print(f'Exception details: {str(e)}')
         print('Response: You can only ask Maths related Queries!')
+    except OutputGuardrailTripwireTriggered as e:
+        print('Unexpected Output')
+
 
 
 if __name__ == '__main__':
