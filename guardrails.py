@@ -33,7 +33,7 @@ config = RunConfig(
 
 class MathsQueryDetectorOutput(BaseModel):
     is_not_maths_query: bool
-    explaination: str
+    explanation: str
 
 
 maths_detector_guardrail_agent = Agent(
@@ -55,7 +55,7 @@ async def not_maths_homework_detection_guardrail(ctx: RunContextWrapper[None], a
 
 math_homework_agent = Agent(
     name='Maths Helper Agent',
-    instructions='Answer maths query            ',
+    instructions='Answer maths query',
     model=model,
     input_guardrails=[not_maths_homework_detection_guardrail]
 )
@@ -65,11 +65,12 @@ async def main():
     try:
         user_input = input('User: ')
         result = await Runner.run(math_homework_agent, user_input, run_config=config)
-        print('Guardrail not triggered')
+        # print('Guardrail not triggered')
         print(f'Response: {result.final_output}')
     except InputGuardrailTripwireTriggered as e:
-        print('Maths Guardrail triggered')
-        print(f'Exception details: {str(e)}')
+        # print('Maths Guardrail triggered')
+        # print(f'Exception details: {str(e)}')
+        print('Response: You can only ask Maths related Queries!')
 
 
 if __name__ == '__main__':
