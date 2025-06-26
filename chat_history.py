@@ -52,4 +52,6 @@ async def main():
 
         print(f'Ai: {result.final_output}')
 
+        convo = result.to_input_list()
+
 asyncio.run(main())
