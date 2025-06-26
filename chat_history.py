@@ -47,11 +47,12 @@ async def main():
         convo.append({ 'content': user_input, 'role': 'user' })
         result = await Runner.run(agent, convo, run_config=config)
 
-        # for message in result.to_input_list():
-        #     print(message)
 
         print(f'Ai: {result.final_output}')
 
         convo = result.to_input_list()
+        
+        for message in result.to_input_list():
+            print(message)
 
 asyncio.run(main())
