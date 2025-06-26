@@ -42,6 +42,7 @@ convo: list[TResponseInputItem] = []
 
 
 async def main():
+    global convo
     while True:
         user_input = input('User: ')
         convo.append({ 'content': user_input, 'role': 'user' })
@@ -49,10 +50,9 @@ async def main():
 
 
         print(f'Ai: {result.final_output}')
-
         convo = result.to_input_list()
         
-        for message in result.to_input_list():
-            print(message)
+        # for message in result.to_input_list():
+        #     print(message)
 
 asyncio.run(main())
