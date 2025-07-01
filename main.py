@@ -59,7 +59,12 @@ triage_agent = Agent(
 
 while True:
     user_input = input('User: ')
-    result = Runner.run_sync(triage_agent, user_input, run_config=config)
+    result = Runner.run_sync(
+        triage_agent,
+        user_input, 
+        run_config=config, 
+        # max_turns=2
+    )
 
     if isinstance(result.final_output, AgentOutput):
         print(f'{result.final_output.agent_name}: {result.final_output.response}\n')
