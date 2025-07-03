@@ -28,7 +28,7 @@ config = RunConfig(
     model=model,
     model_provider=external_client,
     tracing_disabled=True,
-    model_settings=ModelSettings(temperature=0.0)
+    model_settings=ModelSettings(temperature=0.7, top_p=0.7)
 )
 
 
