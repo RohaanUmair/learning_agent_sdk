@@ -4,6 +4,7 @@ from agents import Agent, Runner, AsyncOpenAI, OpenAIChatCompletionsModel, model
 from agents.run import RunConfig
 from pydantic import BaseModel
 from dataclasses import dataclass
+import random
 
 
 load_dotenv()
@@ -46,9 +47,23 @@ async def fetch_user_age(ctx: RunContextWrapper[UserInfo]) -> str:
     return f"The user {ctx.context.name} is 47 years old"
 
 
+@dataclass
+class CustomInstruction:
+    style: str
+
+def custom_instructions(ctx: RunContextWrapper[CustomInstruction], agent: Agent[CustomInstruction]) -> str:
+    context = ctx.context
+    if context.style == "haiku":
+        return "Only respond in haikus."
+    elif context.style == "pirate":
+        return "Respond as a pirate."
+    else:
+        return "Respond as a robot and say 'beep boop' a lot."
+
+
 agent = Agent[UserInfo](
     name='Agent',
-    instructions='You are supportive agent',
+    instructions=custom_instructions,
     model=model,
     tools=[fetch_user_age]
 )
@@ -57,10 +72,13 @@ agent = Agent[UserInfo](
 
 while True:
     user_input = input('User: ')
+    choice = random.choice(['haiku', 'pirate', 'robot'])
+    context = CustomInstruction(choice)
     result = Runner.run_sync(
         agent,
         user_input, 
         run_config=config,
-        context=user_info
+        # context=user_info
+        context=context
     )
     print(f'Ai: {result.final_output}')
